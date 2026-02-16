@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/alexrudloff/caesar-cli/internal/client"
 	"github.com/alexrudloff/caesar-cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +22,7 @@ var collectionsCreateCmd = &cobra.Command{
 	Short: "Create a new collection",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := client.New()
+		c, err := newClient()
 		if err != nil {
 			output.Error("%v", err)
 		}

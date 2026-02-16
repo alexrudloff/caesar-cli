@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/alexrudloff/caesar-cli/internal/client"
 	"github.com/alexrudloff/caesar-cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +16,7 @@ var brainstormCmd = &cobra.Command{
 	Short: "Start a brainstorm session to get clarifying questions before research",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := client.New()
+		c, err := newClient()
 		if err != nil {
 			output.Error("%v", err)
 		}
@@ -27,14 +26,15 @@ var brainstormCmd = &cobra.Command{
 			output.Error("%v", err)
 		}
 
-		fmt.Printf("Brainstorm session: %s\n\n", session.ID)
+		w := cmd.OutOrStdout()
+		fmt.Fprintf(w, "Brainstorm session: %s\n\n", session.ID)
 		for i, q := range session.Questions {
-			fmt.Printf("%d. %s\n", i+1, q.Question)
+			fmt.Fprintf(w, "%d. %s\n", i+1, q.Question)
 			for k, v := range q.Options {
-				fmt.Printf("   %s) %s\n", k, v)
+				fmt.Fprintf(w, "   %s) %s\n", k, v)
 			}
-			fmt.Println()
+			fmt.Fprintln(w)
 		}
-		fmt.Println("Use this session ID with: caesar research create --brainstorm", session.ID, "\"your query\"")
+		fmt.Fprintln(w, "Use this session ID with: caesar research create --brainstorm", session.ID, "\"your query\"")
 	},
 }

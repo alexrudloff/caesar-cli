@@ -4,8 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/alexrudloff/caesar-cli/internal/client"
 	"github.com/spf13/cobra"
 )
+
+// newClient is the function used to create API clients. Tests can replace it.
+var newClient = func() (*client.Client, error) {
+	return client.New()
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "caesar",

@@ -17,6 +17,13 @@ type Client struct {
 	apiKey     string
 }
 
+// Options allows creating a Client with explicit dependencies (used in tests).
+type Options struct {
+	HTTPClient *http.Client
+	BaseURL    string
+	APIKey     string
+}
+
 func New() (*Client, error) {
 	apiKey, err := config.GetAPIKey()
 	if err != nil {
@@ -27,6 +34,23 @@ func New() (*Client, error) {
 		baseURL:    config.BaseURL,
 		apiKey:     apiKey,
 	}, nil
+}
+
+// NewWithOptions creates a Client with explicit dependencies.
+func NewWithOptions(opts Options) *Client {
+	httpClient := opts.HTTPClient
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 120 * time.Second}
+	}
+	baseURL := opts.BaseURL
+	if baseURL == "" {
+		baseURL = config.BaseURL
+	}
+	return &Client{
+		httpClient: httpClient,
+		baseURL:    baseURL,
+		apiKey:     opts.APIKey,
+	}
 }
 
 func (c *Client) do(method, path string, body any) (*http.Response, error) {

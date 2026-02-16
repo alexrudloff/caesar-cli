@@ -3,20 +3,30 @@ package output
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
-// JSON prints v as indented JSON to stdout.
+// Stdout and Stderr are the writers used for output. Tests can replace these.
+var (
+	Stdout io.Writer = os.Stdout
+	Stderr io.Writer = os.Stderr
+)
+
+// ExitFunc is called to exit the process. Tests can replace this.
+var ExitFunc = os.Exit
+
+// JSON prints v as indented JSON to Stdout.
 func JSON(v any) {
-	enc := json.NewEncoder(os.Stdout)
+	enc := json.NewEncoder(Stdout)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(v); err != nil {
-		fmt.Fprintf(os.Stderr, "Error encoding output: %v\n", err)
+		fmt.Fprintf(Stderr, "Error encoding output: %v\n", err)
 	}
 }
 
-// Error prints an error message to stderr and exits.
+// Error prints an error message to Stderr and exits.
 func Error(format string, args ...any) {
-	fmt.Fprintf(os.Stderr, "Error: "+format+"\n", args...)
-	os.Exit(1)
+	fmt.Fprintf(Stderr, "Error: "+format+"\n", args...)
+	ExitFunc(1)
 }

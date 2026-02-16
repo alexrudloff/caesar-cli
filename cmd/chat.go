@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alexrudloff/caesar-cli/internal/client"
 	"github.com/alexrudloff/caesar-cli/internal/output"
 	"github.com/spf13/cobra"
 )
+
+// chatPollInterval controls how often chat send polls. Tests can set this to 0.
+var chatPollInterval = 2 * time.Second
 
 func init() {
 	rootCmd.AddCommand(chatCmd)
@@ -27,7 +29,7 @@ var chatSendCmd = &cobra.Command{
 	Short: "Send a follow-up question about a research job",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := client.New()
+		c, err := newClient()
 		if err != nil {
 			output.Error("%v", err)
 		}
@@ -44,19 +46,20 @@ var chatSendCmd = &cobra.Command{
 		}
 
 		// Poll until the message is complete.
+		w := cmd.OutOrStdout()
 		for msg.Status == "processing" {
-			time.Sleep(2 * time.Second)
+			time.Sleep(chatPollInterval)
 			msg, err = c.GetChatMessage(args[0], msg.ID)
 			if err != nil {
 				output.Error("%v", err)
 			}
 		}
 
-		fmt.Println(msg.Content)
+		fmt.Fprintln(w, msg.Content)
 		if len(msg.Results) > 0 {
-			fmt.Println("\nSources:")
+			fmt.Fprintln(w, "\nSources:")
 			for _, r := range msg.Results {
-				fmt.Printf("  [%d] %s - %s\n", r.CitationIndex, r.Title, r.URL)
+				fmt.Fprintf(w, "  [%d] %s - %s\n", r.CitationIndex, r.Title, r.URL)
 			}
 		}
 	},
@@ -67,7 +70,7 @@ var chatHistoryCmd = &cobra.Command{
 	Short: "List chat history for a research job",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := client.New()
+		c, err := newClient()
 		if err != nil {
 			output.Error("%v", err)
 		}
