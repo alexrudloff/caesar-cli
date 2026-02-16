@@ -1,0 +1,16 @@
+# Binary
+caesar-cli
+caesar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
